@@ -29,10 +29,12 @@ var emitter = new events.EventEmitter();
 var watcher;
 
 beforeEach(function() {
+	// create a new watcher
 	watcher = nigah(emitter);
 });
 
 afterEach(function() {
+	// restore emitter to its original state
 	watcher.restore();
 });
 
@@ -44,17 +46,17 @@ it('should pass the correct id', function(done) {
 			done: 1
 		});
 
-		// strict mode
+		// strict mode - add strict boolean
 		watcher.assertCount({
 			'super awesome event': 2,
 			'another event': 1,
 			done: 1
-		});
+		}, true);
 
 		// check arguments match
 		var history = watcher.getHistory('super awesome event');
 		assert.eql(history[0], [1, 2]);
-		// should throw since someObject.id does not exist
+		// should throw since someObject.id below does not exist
 		assert.eql(history[1], [3, 4]);
 
 		done();
@@ -70,9 +72,9 @@ it('should pass the correct id', function(done) {
 API
 ---
 
-A watcher has the following two methods:
+A watcher has the following methods:
 
-### assertCount(expectedCounts, strict)
+### watcher.assertCount(expectedCounts, strict)
 
 Assert count provides an easy way to assert that the required events were transmitted x number of times as expected.
 
@@ -97,7 +99,7 @@ An object with events denoted as keys and their expected count denoted as their 
 A boolean flag to enable strict mode. Under strict mode, only events within the expectedCounts are allowed. Any other events emitted are considered to be an error. This is especially useful in scenarios where you are expecting your code to short-circuit if a pre-condition fails, but you accidentally forget the return statement allowing the code to execute.
 
 
-### getHistory(event)
+### watcher.getHistory(event)
 
 Returns all the arguments that were emitted. Useful for asserting correct arguments are passed.
 
@@ -129,7 +131,7 @@ it('should pass the correct id', function(done) {
 });
 ```
 
-### restore()
+### watcher.restore()
 
 Restores the event emitter to its original state
 
