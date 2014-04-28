@@ -139,5 +139,8 @@ Restores the event emitter to its original state
 Changelog
 ---------
 
+__v0.0.2__
+- Added repo details to package.json
+
 __v0.0.1__
 - Initial commit
