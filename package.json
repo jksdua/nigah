@@ -1,10 +1,11 @@
 {
   "name": "nigah",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "Watchful eye for event emitters",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha --bail"
+    "test": "./node_modules/.bin/mocha --bail",
+    "test-watch": "./node_modules/.bin/mocha --bail --watch --reporter min"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,12 @@
   "homepage": "https://github.com/jksdua/nigah",
   "devDependencies": {
     "chai": "~1.9.1",
-    "mocha": "~1.18.2"
+    "jshint": "^2.6.0",
+    "mocha": "~1.18.2",
+    "precommit-hook": "^1.0.7"
+  },
+  "dependencies": {
+    "eventemitter2": "^0.4.14",
+    "extend": "^2.0.0"
   }
 }

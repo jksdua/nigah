@@ -1,33 +1,40 @@
 /* jshint node:true */
 'use strict';
 
-var slice = Array.prototype.slice;
 var assert = require('assert');
+var extend = require('extend');
+var EventEmitter = require('eventemitter2').EventEmitter2;
+
+var slice = Array.prototype.slice;
 
 /**
 	Overrides the emit method of an event emitter to assist with event assertions
 
 	@param {EventEmitter} emitter Emitter to be overridden
+	@param {options} options Options
  */
-function Watcher(emitter) {
+function Watcher(emitter, options) {
 	if (!(this instanceof Watcher)) {
 		return new Watcher(emitter);
 	}
+
+	this.emitter = emitter;
+	this.options = extend({ wildcard: true, delimiter: '.' }, options);
+	this.resetHistory();
 
 	// light assertion that emitter is a valid EventEmitter object
 	assert(emitter.on, 'Emitter does not contain an on method');
 	assert(emitter.once, 'Emitter does not contain a once method');
 	assert(emitter.emit, 'Emitter does not contain an emit method');
 
-	this.history = {};
-	this.emitter = emitter;
-
 	// override emit method
 	this.originalEmit = emitter.emit;
 	emitter.emit = this.fakeEmitter.bind(this);
+
+	EventEmitter.call(this,	this.options);
 }
 
-var proto = Watcher.prototype;
+var proto = Watcher.prototype = Object.create(EventEmitter.prototype);
 
 /**
 	Restores the overridden emitter objects
@@ -36,6 +43,9 @@ proto.restore = function() {
 	this.emitter.emit = this.originalEmit;
 };
 
+/**
+	Fake emitter that overrides the original emit function
+ */
 proto.fakeEmitter = function(event) {
 	// create a history object for this event
 	this.history[event] = this.history[event] || [];
@@ -44,6 +54,16 @@ proto.fakeEmitter = function(event) {
 	this.history[event].push(slice.call(arguments, 1));
 	// let the original emit handle it
 	this.originalEmit.apply(this.emitter, arguments);
+	// also trigger an event on the watcher
+	EventEmitter.prototype.emit.apply(this, arguments);
+};
+
+/**
+	Override emit function to also emit on the original emitter
+ */
+proto.emit = function() {
+	// fakeEmitter automatically sets the right context
+	this.emitter.emit.apply(null, arguments);
 };
 
 /**
@@ -82,6 +102,13 @@ proto.assertCount = function(expectedCounts, strict) {
 			assert(actualEvents.indexOf(event) > -1, 'Expected `' + event + '` to be emitted ' + count + ' times but it was never emitted');
 		}
 	});
+};
+
+/**
+	Reset history of watcher
+ */
+proto.resetHistory = function() {
+	this.history = {};
 };
 
 /**

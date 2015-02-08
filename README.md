@@ -7,6 +7,8 @@ Ever wanted to test whether the correct events are being emitted? This utility p
 
 It does not mock or stub event listeners, instead it overrides the emit method to stash important data required for assertions and then lets the program execution continue as is.
 
+__New:__ Watchers and emitters are synced. Watcher is now an [eventemitter2](https://www.npmjs.com/package/eventemitter2) instance. Events trigger on one also triggers them on the other.
+
 
 Installation
 ------------
@@ -131,13 +133,49 @@ it('should pass the correct id', function(done) {
 });
 ```
 
+### watcher.resetHistory()
+
+Resets history of a watcher
+
 ### watcher.restore()
 
 Restores the event emitter to its original state
 
+### watcher.emit() and watcher.on()
+
+Watchers and emitters are now synced. Emitting an event on one also triggers it on the other.
+
+```js
+var watcher = nigah(emitter, { wildcard: true, delimiter: '.' });
+
+// listen for events on the watcher
+watcher.once('some event', function() {
+	... do something ...
+});
+
+
+// emit on the watcher, it is emitted on the original emitter
+	// good for triggering event based processing
+emitter.once('some event', function() {
+
+	// if it was emitted on the original emitter, it should also be caught by the watcher right?
+	watcher.assertCount({
+		'some event': 1
+	});
+
+});
+watcher.emit('some event');
+```
+
+
 
 Changelog
 ---------
+
+__v1.0.0 (8 Feb 2014)__
+- Watchers are now event emitters and events flow two-way between the emitter and the watcher
+- Added a `resetHistory()` method on the watcher
+- Ready for release so why not make it 1.0.0!
 
 __v0.0.2__
 - Added repo details to package.json
